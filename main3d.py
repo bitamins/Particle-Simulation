@@ -48,9 +48,9 @@ def generate_random_particles(n_particles=5,max_height=HEIGHT,max_width=WIDTH,ma
        
 def move_particles_random(particles,x_idx,y_idx,z_idx,vx_idx,vy_idx,vz_idx,size_idx,height,width,depth,max_velocity,min_velocity,max_mass,min_mass,max_size,min_size,step=1):
     # move particles by adding velocity
-    particles[:,x_idx] += particles[:,vx_idx] * step
+    particles[:,x_idx] += np.power(particles[:,vx_idx],1) * step * 2
     particles[:,y_idx] += particles[:,vy_idx] * step
-    particles[:,z_idx] += particles[:,vz_idx]**1.2 * step
+    particles[:,z_idx] += np.power(particles[:,vz_idx],1) * step
     
     # if offscreen
     particles_idx = np.argwhere(np.logical_or.reduce((particles[:,x_idx]<=0.-particles[:,size_idx],
@@ -100,7 +100,7 @@ def draw_collisions(screen,particles,pairs,r_idx,g_idx,b_idx,x_idx,y_idx,size_id
         pygame.draw.line(screen,color,(particles[i,x_idx],particles[i,y_idx]),(particles[j,x_idx],particles[j,y_idx]),thickness)
 
 
-def draw_particles(screen,particles,r_idx,g_idx,b_idx,x_idx,y_idx,z_idx,vx_idx,vy_idx,vz_idx,size_idx,max_depth,trail_size=3,trail_stride=1,trail_gradient=0.5):
+def draw_particles(screen,particles,r_idx,g_idx,b_idx,x_idx,y_idx,z_idx,vx_idx,vy_idx,vz_idx,size_idx,max_depth,trail_size=3.,trail_stride=1.,trail_gradient=0.5):
     # draw particles with darkening gradient history tail
     for particle in particles:
         # compute color value ratios for history tail
@@ -118,9 +118,11 @@ def draw_particles(screen,particles,r_idx,g_idx,b_idx,x_idx,y_idx,z_idx,vx_idx,v
             color = (int(particle[r_idx] * ratio),int(particle[g_idx] * ratio),int(particle[b_idx] * ratio))
             pos = (int(particle[x_idx] - particle[vx_idx] * i * trail_stride),int(particle[y_idx] - particle[vy_idx] * i * trail_stride))
             size = int((particle[size_idx] * (1. - ((particle[z_idx] - particle[vz_idx] * i * trail_stride)/(max_depth+particle[size_idx])))))
+
             if size < 0.:
                 size = 0
-            pygame.draw.circle(screen,color,pos,size,0)
+            else:
+                pygame.draw.circle(screen,color,pos,size,0)
 
 def main():
     # https://realpython.com/pygame-a-primer/
